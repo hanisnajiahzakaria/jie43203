@@ -51,4 +51,4 @@ for i, ax in enumerate(axs.flat):
     ax.tick_params(axis='y', labelsize=12)
 
 plt.tight_layout()
-st.pyplot(plt(gcf)
+st.pyplot(plt.gcf())
