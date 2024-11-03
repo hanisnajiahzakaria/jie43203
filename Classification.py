@@ -4,4 +4,4 @@ data = pd.read_csv('https://raw.githubusercontent.com/hanisnajiahzakaria/jie4320
 data.head()
 print(data.shape)
 
-st.write(data.head(21))
+st.write(data)
