@@ -17,7 +17,7 @@ st.title("California Housing Dataset Analysis 📊")
 st.divider()
 
 # Data overview with metrics
-st.subheader("Data Overview")
+st.subheader("Data Overview 📈")
 col1, col2, col3 = st.columns(3)
 col1.metric("Total Entries", data.shape[0])
 col2.metric("Total Features", data.shape[1])
