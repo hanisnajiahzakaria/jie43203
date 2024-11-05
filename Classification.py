@@ -1,3 +1,6 @@
+Certainly! A bar chart is a suitable alternative to show missing values without using a heatmap. This type of chart will display each column’s missing values count in a straightforward way. Here’s the updated code snippet with a bar chart for missing values instead of a heatmap:
+
+```python
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
@@ -33,10 +36,14 @@ st.subheader("Missing Values in Each Column")
 missing_info = pd.DataFrame({"Missing": data.isnull().any(), "Count": data.isnull().sum()})
 st.write(missing_info)
 
-# Visualize missing values as a heatmap
-st.subheader("Missing Values Heatmap")
+# Visualize missing values as a bar chart
+st.subheader("Missing Values Count by Column")
+missing_counts = data.isnull().sum()
 plt.figure(figsize=(10, 6))
-sns.heatmap(data.isnull(), cbar=False, cmap="viridis")
+missing_counts[missing_counts > 0].plot(kind='bar', color='salmon')
+plt.title("Missing Values Count per Column")
+plt.xlabel("Columns")
+plt.ylabel("Number of Missing Values")
 st.pyplot(plt.gcf())
 
 # Handling missing data by dropping 'total_bedrooms' column
