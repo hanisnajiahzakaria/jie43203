@@ -12,37 +12,57 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 # Load and display initial data
 data = pd.read_csv('https://raw.githubusercontent.com/hanisnajiahzakaria/jie43203/refs/heads/main/housing.csv')
 
-# Display dataset shape and sample data
+# Page title and divider
 st.title("California Housing Dataset Analysis 📊")
 st.divider()
+
+# Data overview with metrics
+st.subheader("Data Overview")
+col1, col2, col3 = st.columns(3)
+col1.metric("Total Entries", data.shape[0])
+col2.metric("Total Features", data.shape[1])
+col3.metric("Ocean Proximity Categories", data['ocean_proximity'].nunique())
+
+# Display dataset shape and sample data
 st.subheader("Initial Dataset Overview")
 st.write("Dataset shape:", data.shape)
 st.write(data.head())
 
-# Check for missing values
-a = data.isnull().any()
-b = data.isnull().sum()
+# Check and visualize missing values
 st.subheader("Missing Values in Each Column")
-st.write("Columns with missing values:", a)
-st.write("Count of missing values:", b)
+missing_info = pd.DataFrame({"Missing": data.isnull().any(), "Count": data.isnull().sum()})
+st.write(missing_info)
+
+# Visualize missing values as a heatmap
+st.subheader("Missing Values Heatmap")
+plt.figure(figsize=(10, 6))
+sns.heatmap(data.isnull(), cbar=False, cmap="viridis")
+st.pyplot(plt.gcf())
 
 # Handling missing data by dropping 'total_bedrooms' column
-df = pd.DataFrame(data)
-df.drop(columns=['total_bedrooms'], inplace=True)
+df = data.drop(columns=['total_bedrooms'])
 
-# Display column types and summary
+# Display data info after handling missing values
 st.subheader("Data Information After Dropping 'total_bedrooms'")
-st.write(df.info())
+buffer = st.empty()  # To handle print output in Streamlit
+buffer.text(df.info())
 
 # Encode 'ocean_proximity' to numeric values
 df['ocean_proximity'] = df['ocean_proximity'].replace({
     'NEAR BAY': 1, '<1H OCEAN': 2, 'INLAND': 2, 'NEAR OCEAN': 1, 'ISLAND': 1
 })
 
-# Plot boxplots for each column to identify outliers
-st.subheader("Boxplots for Outlier Detection")
-st.write("Identifying outliers in each feature:")
+# Sidebar filters for data exploration
+st.sidebar.subheader("Filter Data")
+age_filter = st.sidebar.slider("Select Housing Median Age", int(df['housing_median_age'].min()), int(df['housing_median_age'].max()))
+income_filter = st.sidebar.slider("Select Median Income", float(df['median_income'].min()), float(df['median_income'].max()))
 
+filtered_df = df[(df['housing_median_age'] <= age_filter) & (df['median_income'] <= income_filter)]
+st.subheader("Filtered Data")
+st.write(filtered_df)
+
+# Boxplots for outlier detection
+st.subheader("Boxplots for Outlier Detection")
 red_circle = dict(markerfacecolor='red', marker='o', markeredgecolor='white')
 fig, axs = plt.subplots(1, len(df.columns), figsize=(20, 10))
 for i, ax in enumerate(axs.flat):
@@ -52,48 +72,22 @@ for i, ax in enumerate(axs.flat):
 plt.tight_layout()
 st.pyplot(fig)
 
-# Outlier Removal Process
-# Calculate IQR and set thresholds for each column and filter data
-# Households Outliers
-households_percentile25 = df['households'].quantile(0.25)
-households_percentile75 = df['households'].quantile(0.75)
-iqr = households_percentile75 - households_percentile25
-households_upper_limit = households_percentile75 + 1.5 * iqr
+# Outlier Removal
+st.subheader("Outliers Removal Process")
 
-# Filter data based on households
-new_df = df[df['households'] < households_upper_limit]
+# Apply IQR method to remove outliers for households, median_income, total_rooms, and population
+def remove_outliers(data, column):
+    Q1 = data[column].quantile(0.25)
+    Q3 = data[column].quantile(0.75)
+    IQR = Q3 - Q1
+    return data[(data[column] >= Q1 - 1.5 * IQR) & (data[column] <= Q3 + 1.5 * IQR)]
 
-# Median Income Outliers
-income_percentile25 = new_df['median_income'].quantile(0.25)
-income_percentile75 = new_df['median_income'].quantile(0.75)
-iqr = income_percentile75 - income_percentile25
-income_upper_limit = income_percentile75 + 1.5 * iqr
+new_df = df.copy()
+for col in ['households', 'median_income', 'total_rooms', 'population']:
+    new_df = remove_outliers(new_df, col)
 
-# Filter data based on median_income
-new_df = new_df[new_df['median_income'] < income_upper_limit]
-
-# Total Rooms Outliers
-totroom_percentile25 = new_df['total_rooms'].quantile(0.25)
-totroom_percentile75 = new_df['total_rooms'].quantile(0.75)
-iqr = totroom_percentile75 - totroom_percentile25
-totroom_upper_limit = totroom_percentile75 + 1.5 * iqr
-
-# Filter data based on total_rooms
-new_df = new_df[new_df['total_rooms'] < totroom_upper_limit]
-
-# Population Outliers
-populations_percentile25 = new_df['population'].quantile(0.25)
-populations_percentile75 = new_df['population'].quantile(0.75)
-iqr = populations_percentile75 - populations_percentile25
-populations_upper_limit = populations_percentile75 + 1.5 * iqr
-
-# Filter data based on population
-new_df = new_df[new_df['population'] < populations_upper_limit]
-
-# Check outliers removal
+# Check outliers removal with boxplots
 st.subheader("Outliers Removal: Boxplots After Filtering")
-st.write("After removing outliers, the boxplots show less extreme values:")
-
 fig, axs = plt.subplots(1, len(new_df.columns), figsize=(20, 10))
 for i, ax in enumerate(axs.flat):
     ax.boxplot(new_df.iloc[:, i], flierprops=red_circle)
@@ -102,17 +96,40 @@ for i, ax in enumerate(axs.flat):
 plt.tight_layout()
 st.pyplot(fig)
 
-# Check for duplicate rows
+# Duplicate data check
 st.subheader("Duplicate Data Check")
 st.write("Number of duplicate rows in the dataset:", new_df.duplicated().sum())
 
 # Final dataset shape and summary statistics
 st.subheader("Final Dataset Shape and Summary Statistics")
 st.write("Final dataset shape after outlier removal:", new_df.shape)
-st.write("Statistical summary of the cleaned dataset:")
 st.write(new_df.describe())
 
-#Data Exploration 
-new_df.describe()
-sns.histplot(new_df.housing_median_age)
+# Correlation heatmap
+st.subheader("Feature Correlation Heatmap")
+plt.figure(figsize=(10, 8))
+sns.heatmap(new_df.corr(), annot=True, cmap="coolwarm", fmt=".2f")
+st.pyplot(plt.gcf())
 
+# Interactive histogram
+st.subheader("Interactive Histogram")
+column_to_plot = st.selectbox("Select a column to display its histogram:", new_df.columns)
+plt.figure(figsize=(8, 5))
+sns.histplot(new_df[column_to_plot], kde=True)
+st.pyplot(plt.gcf())
+
+# Pairplot for feature correlations
+st.subheader("Pairplot for Feature Correlations")
+pairplot_fig = sns.pairplot(new_df[['median_house_value', 'median_income', 'housing_median_age', 'total_rooms']], corner=True)
+st.pyplot(pairplot_fig)
+
+# Prediction model (example)
+st.sidebar.subheader("Predict House Value")
+# Example inputs for prediction (replace with actual model if trained)
+median_income_input = st.sidebar.slider("Median Income", float(new_df['median_income'].min()), float(new_df['median_income'].max()))
+housing_age_input = st.sidebar.slider("Housing Median Age", int(new_df['housing_median_age'].min()), int(new_df['housing_median_age'].max()))
+
+# Placeholder for prediction (replace this with trained model prediction code)
+# For instance, if model is `trained_model`, then use `prediction = trained_model.predict([[median_income_input, housing_age_input]])`
+prediction = median_income_input * 1000  # This is a placeholder
+st.sidebar.write(f"Predicted House Price: ${prediction:,.2f}")
