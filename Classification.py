@@ -13,7 +13,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 data = pd.read_csv('https://raw.githubusercontent.com/hanisnajiahzakaria/jie43203/refs/heads/main/housing.csv')
 
 # Display dataset shape and sample data
-st.title("California Housing Dataset Analysis")
+st.title("California Housing Dataset Analysis 📊")
 st.divider()
 st.subheader("Initial Dataset Overview")
 st.write("Dataset shape:", data.shape)
