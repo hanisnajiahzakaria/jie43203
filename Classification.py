@@ -112,3 +112,7 @@ st.write("Final dataset shape after outlier removal:", new_df.shape)
 st.write("Statistical summary of the cleaned dataset:")
 st.write(new_df.describe())
 
+#Data Exploration 
+new_df.describe()
+sns.histplot(new_df.housing_median_age)
+
