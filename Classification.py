@@ -1,6 +1,3 @@
-Certainly! A bar chart is a suitable alternative to show missing values without using a heatmap. This type of chart will display each column’s missing values count in a straightforward way. Here’s the updated code snippet with a bar chart for missing values instead of a heatmap:
-
-```python
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
