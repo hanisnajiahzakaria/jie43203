@@ -56,15 +56,6 @@ df['ocean_proximity'] = df['ocean_proximity'].replace({
     'NEAR BAY': 1, '<1H OCEAN': 2, 'INLAND': 2, 'NEAR OCEAN': 1, 'ISLAND': 1
 })
 
-# Sidebar filters for data exploration
-st.sidebar.subheader("Filter Data")
-age_filter = st.sidebar.slider("Select Housing Median Age", int(df['housing_median_age'].min()), int(df['housing_median_age'].max()))
-income_filter = st.sidebar.slider("Select Median Income", float(df['median_income'].min()), float(df['median_income'].max()))
-
-filtered_df = df[(df['housing_median_age'] <= age_filter) & (df['median_income'] <= income_filter)]
-st.subheader("Filtered Data")
-st.write(filtered_df)
-
 # Boxplots for outlier detection
 st.subheader("Boxplots for Outlier Detection")
 red_circle = dict(markerfacecolor='red', marker='o', markeredgecolor='white')
@@ -126,12 +117,6 @@ st.pyplot(plt.gcf())
 st.subheader("Pairplot for Feature Correlations")
 pairplot_fig = sns.pairplot(new_df[['median_house_value', 'median_income', 'housing_median_age', 'total_rooms']], corner=True)
 st.pyplot(pairplot_fig)
-
-# Prediction model (example)
-st.sidebar.subheader("Predict House Value")
-# Example inputs for prediction (replace with actual model if trained)
-median_income_input = st.sidebar.slider("Median Income", float(new_df['median_income'].min()), float(new_df['median_income'].max()))
-housing_age_input = st.sidebar.slider("Housing Median Age", int(new_df['housing_median_age'].min()), int(new_df['housing_median_age'].max()))
 
 # Placeholder for prediction (replace this with trained model prediction code)
 # For instance, if model is `trained_model`, then use `prediction = trained_model.predict([[median_income_input, housing_age_input]])`
